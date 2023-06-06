@@ -1,1 +1,5 @@
-package awesomeProject1
+package main
+
+func main() {
+
+}
