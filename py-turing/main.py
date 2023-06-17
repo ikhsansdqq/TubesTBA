@@ -1,7 +1,7 @@
 def extract_lexemes(code):
     symbols = ['{', '}', '(', ')', '[', ']', '.', '"', '*', '\n', ':', ',']
     other_symbols = ['\\', '/*', '*/']
-    keywords = ['func', 'main', 'var', 'int32', 'if', 'else']
+    keywords = ['func', 'main', 'var', 'int32', 'if', 'else', 'and']
     KEYWORDS = symbols + other_symbols + keywords
 
     lexemes = []
@@ -34,7 +34,7 @@ def main():
         var x int32 = 5
         var y int32 = 10
 
-        if x > y {
+        if x > y and x < z {
             fmt.Println("x is greater than y")
         } else {
             fmt.Println("x is less than or equal to y")
