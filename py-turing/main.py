@@ -1,60 +1,151 @@
 def extract_lexemes(token_array):
-    symbols = ['{', '}', '(', ')','\n']
+    symbols = ['{', '}','\n']
     comparison_operators = ['>', '<', '==', '>=', '<=']
     operators = ['+', '-','=']
-    int_support = ['8', '16', '32', '64', '128']
+    int_support = [8, 16, 32, 64, 128]
     if_else = ['if', 'else']
     declare_variable = ['var']
     data_types = ['int']
     variable = ['x','y']
 
     lexemes = []
-    lexeme = ''
-    amount_token = len(token_array)
     i = 0
-    
-    while i < amount_token:
-        token = token_array[i]
-
-        if token.isalpha():
-            lexeme = token
-            if lexeme in declare_variable:
-                lexemes.append('declare_variable')
-            elif lexeme in variable:
-                lexemes.append('variable')
-            elif lexeme in data_types:
-                lexemes.append('data_types')
-            elif lexeme in if_else:
-                lexemes.append('if_else')
-            else:
-                lexeme = ''
-
-        elif token.isdigit():
-            lexeme = token
-            if lexeme in int_support:
-                lexemes.append('int_support')
-            else:
-                lexeme = ''
-
-        elif token in comparison_operators:
-            lexemes.append('comparison_operator')
-            lexeme = ''
-
-        elif token in operators:
-            lexemes.append('operator')
-            lexeme = ''
-
-        elif token in symbols:
-            if (lexeme and (lexeme != 'else') and (lexeme != 'y') and (lexeme != 'int32') and (lexeme != 'int64')):
-                lexemes.append(lexeme)
-                lexeme = ''
-
-            if token != '\n':
-                lexemes.append(token)
-
-        i += 1
-
+    i, lexemes = var_check(i,lexemes,token_array,declare_variable,variable,data_types,int_support)
+    lexemes = if_else_check(i,lexemes,variable,if_else,comparison_operators,symbols,operators,token_array)
     return lexemes
+    
+def var_check(i,lexemes,token_array,declare_variable,variable,data_types,int_support):
+    lexeme = ''
+    lexeme = token_array[i]
+    if lexeme in declare_variable:
+        lexemes.append('declare_variable')
+        i+=1
+        lexeme = token_array[i]
+        if lexeme in variable:
+            lexemes.append('variable')
+            i+=1
+            lexeme = token_array[i]
+            if lexeme in data_types:
+                lexemes.append('data_types')
+                i+=1
+                lexeme = token_array[i]
+                if lexeme == '=':
+                    lexemes.append('=')
+                    i+=1
+                    lexeme = token_array[i]
+                    if int(lexeme) in int_support:
+                        lexemes.append('int_support')
+                        i+=1
+                        if i < 9:
+                            i,lexemes = var_check(i,lexemes,token_array,declare_variable,variable,data_types,int_support)
+                        else:
+                            return i,lexemes
+                    else:
+                        raise ValueError("Invalid lexeme: {}".format(lexeme))
+                else:
+                    raise ValueError("Invalid lexeme: {}".format(lexeme))
+            else:
+                raise ValueError("Invalid lexeme: {}".format(lexeme))
+        else:
+            raise ValueError("Invalid lexeme: {}".format(lexeme))
+    else:
+        raise ValueError("Invalid lexeme: {}".format(lexeme))
+    return i,lexemes
+
+def if_else_check(i,lexemes,variable,if_else,comparison_operators,symbols,operators,token_array):
+    lexeme = ''
+    lexeme = token_array[i]
+    if lexeme in if_else:
+        lexemes.append('if_else')
+        i+=1
+        lexeme = token_array[i]
+        if lexeme in variable:
+            lexemes.append('variable')
+            i+=1
+            lexeme = token_array[i]
+            if lexeme in comparison_operators:
+                lexemes.append('comparison_operator')
+                i+=1
+                lexeme = token_array[i]
+                if lexeme in variable:
+                    lexemes.append('variable')
+                    i+=1
+                    lexeme = token_array[i]
+                    if lexeme in symbols[0]:
+                        lexemes.append('symbols')
+                        i = action_check(i,lexemes,variable,operators,token_array)
+                        if i < len(token_array):
+                            i+=1
+                            lexeme = token_array[i]
+                            if lexeme in symbols[1]:
+                                i+=1
+                                lexeme = token_array[i]
+                                if lexeme in if_else:
+                                    lexemes.append('if_else')
+                                    i+=1
+                                    lexeme = token_array[i]
+                                    if lexeme in symbols[0]:
+                                        lexemes.append('symbols')
+                                        i = action_check(i,lexemes,variable,operators,token_array)
+                                        i+=1
+                                        lexeme = token_array[i]
+                                        if lexeme in symbols[1]:
+                                            lexemes.append('symbols')
+                                        else:
+                                            raise ValueError("Invalid lexeme: {}".format(lexeme))
+                                    else:
+                                        raise ValueError("Invalid lexeme: {}".format(lexeme))
+                                else:
+                                    raise ValueError("Invalid lexeme: {}".format(lexeme))   
+                            else:
+                                raise ValueError("Invalid lexeme: {}".format(lexeme))
+                        else:
+                            raise ValueError("Invalid lexeme: {}".format(lexeme)) 
+                    else:
+                        raise ValueError("Invalid lexeme: {}".format(lexeme)) 
+                else:
+                    raise ValueError("Invalid lexeme: {}".format(lexeme))
+            else:
+                raise ValueError("Invalid lexeme: {}".format(lexeme))
+        else:
+            raise ValueError("Invalid lexeme: {}".format(lexeme))                                
+    else:                       
+        raise ValueError("Invalid lexeme: {}".format(lexeme))
+    return lexemes
+    
+
+def action_check(i,lexemes,variable,operators,token_array):
+    lexeme = ''
+    i+=1
+    lexeme = token_array[i]
+    if lexeme in variable:
+        lexemes.append('variable')
+        i+=1
+        lexeme = token_array[i]
+        if lexeme == '=':
+            lexemes.append('=')
+            i+=1
+            lexeme = token_array[i]
+            if lexeme in variable:
+                lexemes.append('variable')
+                i+=1
+                lexeme = token_array[i]
+                if lexeme in operators:
+                    lexemes.append('operators')
+                    i+=1
+                    lexeme = token_array[i]
+                    if lexeme in variable:
+                        lexemes.append('variable')
+                    else:
+                        raise ValueError("Invalid lexeme: {}".format(lexeme))
+                else:
+                    raise ValueError("Invalid lexeme: {}".format(lexeme))
+            else:
+                raise ValueError("Invalid lexeme: {}".format(lexeme))
+        else:
+            raise ValueError("Invalid lexeme: {}".format(lexeme))
+    return i
+        
 
 
 def main():
@@ -71,9 +162,13 @@ Grammar:
 <int_support> ::= 8 | 16 | 32 | 64 | 128
 
     '''
+    """
+    Change inside the "code" to change the input
+    """
+
     code = ''' 
 var x int = 32
-var y int = 16
+var y int = 128
 
 if x > y {
  	x = x - y
@@ -84,12 +179,17 @@ if x > y {
     print(grammar)
 
     print('This is the code', code)
+    
     token = code.split()
-    print('==================================\nThis is the lexemes')
-    print('==================================\n')
+    print("==================================")
+    print('Parser result :')
+    for tokens  in token:
+        print(tokens)
+    print("\nParser length :",len(token))
+    print('\n==================================\nLexical Analyzer Result: \n')
     lexemes = extract_lexemes(token)
     for lexeme in lexemes:
-       print(lexeme)
+        print(lexeme)
     
 if __name__ == '__main__':
     main()
