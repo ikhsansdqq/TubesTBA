@@ -163,10 +163,10 @@ Grammar:
 
     '''
     """
-    Change inside the "code" to change the input
+    Change inside the "token_input to change the input
     """
 
-    code = ''' 
+    token_input = ''' 
 var x int = 32
 var y int = 128
 
@@ -178,9 +178,9 @@ if x > y {
     '''
     print(grammar)
 
-    print('This is the code', code)
+    print('This is the code', token_input)
     
-    token = code.split()
+    token = token_input.split()
     print("==================================")
     print('Parser result :')
     for tokens  in token:
