@@ -1,7 +1,7 @@
-def extract_lexemes(code):
+def extract_lexemes(token_array):
     symbols = ['{', '}', '(', ')','\n']
     comparison_operators = ['>', '<', '==', '>=', '<=']
-    operators = ['+', '-']
+    operators = ['+', '-','=']
     int_support = ['8', '16', '32', '64', '128']
     if_else = ['if', 'else']
     declare_variable = ['var']
@@ -10,48 +10,47 @@ def extract_lexemes(code):
 
     lexemes = []
     lexeme = ''
+    amount_token = len(token_array)
     i = 0
+    
+    while i < amount_token:
+        token = token_array[i]
 
-    while i < len(code):
-        char = code[i]
+        if token.isalpha():
+            lexeme = token
+            if lexeme in declare_variable:
+                lexemes.append('declare_variable')
+            elif lexeme in variable:
+                lexemes.append('variable')
+            elif lexeme in data_types:
+                lexemes.append('data_types')
+            elif lexeme in if_else:
+                lexemes.append('if_else')
+            else:
+                lexeme = ''
 
-        if char.isalpha():
-            lexeme += char
-            if i+1 < len(code) and not code[i+1].isalpha():
-                if lexeme in declare_variable:
-                    lexemes.append('variable')
-                elif lexeme in data_types:
-                    lexemes.append('data_types')
-                elif lexeme in if_else:
-                    lexemes.append('if_else')
-                elif lexeme in variable:
-                    lexemes.append('variable')
-                else:
-                    lexeme = ''
+        elif token.isdigit():
+            lexeme = token
+            if lexeme in int_support:
+                lexemes.append('int_support')
+            else:
+                lexeme = ''
 
-        elif char.isdigit():
-            lexeme += char
-            if i+1 < len(code) and not code[i+1].isdigit():
-                if lexeme.startswith('int') and lexeme[3:] in int_support:
-                    lexemes.append('int_support')
-                else:
-                    lexeme = ''
-
-        elif char in comparison_operators:
+        elif token in comparison_operators:
             lexemes.append('comparison_operator')
             lexeme = ''
 
-        elif char in operators:
+        elif token in operators:
             lexemes.append('operator')
             lexeme = ''
 
-        elif char in symbols:
+        elif token in symbols:
             if (lexeme and (lexeme != 'else') and (lexeme != 'y') and (lexeme != 'int32') and (lexeme != 'int64')):
                 lexemes.append(lexeme)
                 lexeme = ''
 
-            if char != '\n':
-                lexemes.append(char)
+            if token != '\n':
+                lexemes.append(token)
 
         i += 1
 
@@ -85,9 +84,12 @@ if x > y {
     print(grammar)
 
     print('This is the code', code)
-    lexemes = extract_lexemes(code)
+    token = code.split()
+    print('==================================\nThis is the lexemes')
+    print('==================================\n')
+    lexemes = extract_lexemes(token)
     for lexeme in lexemes:
-        print(lexeme)
+       print(lexeme)
     
 if __name__ == '__main__':
     main()
